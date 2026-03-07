@@ -5,7 +5,7 @@ PAPI now also aims to find and solve as many Memory Leaks as possible, and integ
 
 <img width="400" height="400" alt="image" src="https://github.com/user-attachments/assets/e544085f-9efb-40b7-b0d4-fc025f7313fa" />
 
--# Icon and Name by lyftos, inspired by [Plug & Play](https://store.steampowered.com/app/353560/Plug__Play/) by Morio von Rickenbach, and Michael Frei ([Playables](https://store.steampowered.com/developer/Playables))
+###### Icon and Name by lyftos, inspired by [Plug & Play](https://store.steampowered.com/app/353560/Plug__Play/) by Morio von Rickenbach, and Michael Frei ([Playables](https://store.steampowered.com/developer/Playables))
 
 ## Core Features
 - Sophisticated Core ItemStackKey leak mitigation
@@ -21,4 +21,4 @@ PAPI now also aims to find and solve as many Memory Leaks as possible, and integ
 - Crosshair target / hit result reset
 - Huge screenshot buffer free-on-failure
 
--# See the [Wiki](https://github.com/dipilo/Put-A-Plug-In-it-/wiki/Features-&-Versions) for more specifics on each feature and the versions/ports they're a part of
+###### See the [Wiki](https://github.com/dipilo/Put-A-Plug-In-it-/wiki/Features-&-Versions) for more specifics on each feature and the versions/ports they're a part of
