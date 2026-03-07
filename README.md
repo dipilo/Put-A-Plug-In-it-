@@ -4,6 +4,7 @@ Sophisticated Core natively fixed the Memory Leak in their 1.20.1+ Forge & NeoFo
 PAPI now also aims to find and solve as many Memory Leaks as possible, and integrate features and compatability for and from other mods, to make an all-in-one Memory Leak Fix and Memory Optimization mod, and to increase version and loader support for features of other Memory Leak Fix and Memory Optimization Mods.
 
 <img width="400" height="400" alt="image" src="https://github.com/user-attachments/assets/e544085f-9efb-40b7-b0d4-fc025f7313fa" />
+
 -# Icon and Name by lyftos, inspired by [Plug & Play](https://store.steampowered.com/app/353560/Plug__Play/) by Morio von Rickenbach, and Michael Frei ([Playables](https://store.steampowered.com/developer/Playables))
 
 ## Core Features
