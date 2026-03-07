@@ -1,0 +1,73 @@
+﻿plugins {
+    id 'java'
+    id 'eclipse'
+    id 'idea'
+    id 'net.minecraftforge.gradle' version '5.1.+'
+}
+
+group = 'com.dipilodopilasaurus'
+version = "1.18.2-forge-1.1.0"
+base { archivesName = 'papi' }
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(17)
+}
+
+repositories {
+    mavenCentral()
+    maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
+}
+
+dependencies {
+    minecraft "net.minecraftforge:forge:1.18.2-40.1.30"
+    compileOnly 'org.spongepowered:mixin:0.8.5'
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+}
+
+minecraft {
+    mappings channel: 'official', version: '1.18.2'
+
+    runs {
+        configureEach {
+            workingDirectory project.file('run')
+            property 'forge.logging.console.level', 'debug'
+            mods {
+                papi {
+                    source sourceSets.main
+                }
+            }
+        }
+        client {}
+        server { args '--nogui' }
+    }
+}
+
+tasks.named('processResources', ProcessResources).configure {
+    def replaceProperties = [
+        mod_id: 'papi',
+        mod_name: 'Put A Plug In it!',
+        mod_authors: 'Dipilodopilasaurus',
+        mod_version: project.version,
+        mod_description: 'Client leak mitigation for Sophisticated Core ItemStackKey cache.',
+        loader_version_range: '[40,)',
+        minecraft_version_range: '[1.18.2,1.19)',
+        forge_or_neo_version_range: '[40,)'
+    ]
+    inputs.properties replaceProperties
+    filesMatching(['META-INF/mods.toml']) {
+        expand replaceProperties
+    }
+    filesMatching(['pack.mcmeta']) {
+        expand([pack_format: 9])
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+tasks.named('jar', Jar).configure {
+    manifest {
+        attributes(['MixinConfigs': 'papi.mixins.json'])
+    }
+}

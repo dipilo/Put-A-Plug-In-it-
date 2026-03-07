@@ -1,0 +1,171 @@
+{
+    "generatedAtUtc": "2026-03-04T02:50:11.0719565Z",
+    "root": "ports",
+    "profiles": [
+        {
+            "profile": "forge-1.15.2-1.16.5",
+            "loader": "forge",
+            "minecraft": "1.15.2-1.16.5"
+        },
+        {
+            "profile": "forge-1.17-1.18.2",
+            "loader": "forge",
+            "minecraft": "1.17-1.18.2"
+        },
+        {
+            "profile": "forge-1.19.x",
+            "loader": "forge",
+            "minecraft": "1.19-1.19.4"
+        },
+        {
+            "profile": "forge-1.20.1",
+            "loader": "forge",
+            "minecraft": "1.20.1"
+        },
+        {
+            "profile": "forge-1.20.2-1.20.4",
+            "loader": "forge",
+            "minecraft": "1.20.2-1.20.4"
+        },
+        {
+            "profile": "forge-1.20.5-1.20.6",
+            "loader": "forge",
+            "minecraft": "1.20.5-1.20.6"
+        },
+        {
+            "profile": "forge-1.21.0-1.21.1",
+            "loader": "forge",
+            "minecraft": "1.21-1.21.1"
+        },
+        {
+            "profile": "forge-1.21.2-1.21.3",
+            "loader": "forge",
+            "minecraft": "1.21.2-1.21.3"
+        },
+        {
+            "profile": "forge-1.21.4",
+            "loader": "forge",
+            "minecraft": "1.21.4"
+        },
+        {
+            "profile": "fabric-1.14.4-1.16.5",
+            "loader": "fabric",
+            "minecraft": "1.14.4-1.16.5"
+        },
+        {
+            "profile": "fabric-1.17-1.18.2",
+            "loader": "fabric",
+            "minecraft": "1.17-1.18.2"
+        },
+        {
+            "profile": "fabric-1.19.0-1.19.1",
+            "loader": "fabric",
+            "minecraft": "1.19-1.19.1"
+        },
+        {
+            "profile": "fabric-1.19.2",
+            "loader": "fabric",
+            "minecraft": "1.19.2"
+        },
+        {
+            "profile": "fabric-1.19.3",
+            "loader": "fabric",
+            "minecraft": "1.19.3"
+        },
+        {
+            "profile": "fabric-1.19.4",
+            "loader": "fabric",
+            "minecraft": "1.19.4"
+        },
+        {
+            "profile": "fabric-1.20.1",
+            "loader": "fabric",
+            "minecraft": "1.20.1"
+        },
+        {
+            "profile": "fabric-1.20.4",
+            "loader": "fabric",
+            "minecraft": "1.20.4"
+        },
+        {
+            "profile": "fabric-1.20.5-1.20.6",
+            "loader": "fabric",
+            "minecraft": "1.20.5-1.20.6"
+        },
+        {
+            "profile": "fabric-1.21.1",
+            "loader": "fabric",
+            "minecraft": "1.21.1"
+        },
+        {
+            "profile": "fabric-1.21.2-1.21.4",
+            "loader": "fabric",
+            "minecraft": "1.21.2-1.21.4"
+        },
+        {
+            "profile": "fabric-1.21.5-1.21.8",
+            "loader": "fabric",
+            "minecraft": "1.21.5-1.21.8"
+        },
+        {
+            "profile": "fabric-1.21.9-1.21.10",
+            "loader": "fabric",
+            "minecraft": "1.21.9-1.21.10"
+        },
+        {
+            "profile": "fabric-1.21.11",
+            "loader": "fabric",
+            "minecraft": "1.21.11"
+        },
+        {
+            "profile": "neoforge-1.20.4",
+            "loader": "neoforge",
+            "minecraft": "1.20.4"
+        },
+        {
+            "profile": "neoforge-1.20.5-1.20.6",
+            "loader": "neoforge",
+            "minecraft": "1.20.5-1.20.6"
+        },
+        {
+            "profile": "neoforge-1.21.0-1.21.1",
+            "loader": "neoforge",
+            "minecraft": "1.21-1.21.1"
+        },
+        {
+            "profile": "neoforge-1.21.2-1.21.3",
+            "loader": "neoforge",
+            "minecraft": "1.21.2-1.21.3"
+        },
+        {
+            "profile": "neoforge-1.21.4",
+            "loader": "neoforge",
+            "minecraft": "1.21.4"
+        },
+        {
+            "profile": "neoforge-1.21.5",
+            "loader": "neoforge",
+            "minecraft": "1.21.5"
+        },
+        {
+            "profile": "neoforge-1.21.6-1.21.7",
+            "loader": "neoforge",
+            "minecraft": "1.21.6-1.21.7"
+        },
+        {
+            "profile": "neoforge-1.21.8",
+            "loader": "neoforge",
+            "minecraft": "1.21.8"
+        },
+        {
+            "profile": "neoforge-1.21.9-1.21.10",
+            "loader": "neoforge",
+            "minecraft": "1.21.9-1.21.10"
+        },
+        {
+            "profile": "neoforge-1.21.11",
+            "loader": "neoforge",
+            "minecraft": "1.21.11"
+        }
+    ]
+}

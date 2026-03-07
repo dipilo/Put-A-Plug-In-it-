@@ -1,0 +1,41 @@
+# Gradle
+.gradle/
+build/
+**/build/
+
+# Forge/Fabric run dirs and generated runtime artifacts
+run/
+run_client/
+run_server/
+logs/
+crash-reports/
+
+# IDE and editor
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.classpath
+.project
+.settings/
+bin/
+out/
+*.launch
+
+# OS junk
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Local files
+*.log
+hs_err_pid*
+replay_pid*
+*.hprof
+
+# Keep Gradle wrapper jar tracked
+!gradle/wrapper/gradle-wrapper.jar
+
+# Wiki
+FEATURE_MATRIX.md
