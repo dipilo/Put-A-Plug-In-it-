@@ -21,4 +21,4 @@ PAPI now also aims to find and solve as many Memory Leaks as possible, and integ
 - Crosshair target / hit result reset
 - Huge screenshot buffer free-on-failure
 
--# See the Wiki for more specifics on each feature and the versions/ports they're a part of
+-# See the [Wiki](https://github.com/dipilo/Put-A-Plug-In-it-/wiki/Features-&-Versions) for more specifics on each feature and the versions/ports they're a part of
