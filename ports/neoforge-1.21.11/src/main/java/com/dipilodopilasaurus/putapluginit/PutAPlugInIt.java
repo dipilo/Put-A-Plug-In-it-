@@ -38,7 +38,8 @@ public class PutAPlugInIt {
 
     private static void onClientTickEnd(ClientTickEvent.Post event) {
         SophisticatedCoreLeakFix.onClientTickEnd();
-        ImmediatelyFastCompat.onClientTickEnd();
+        
+                TargetEntityLeakFix.onClientTickEnd();
     }
 
     private static void onServerTickEnd(ServerTickEvent.Post event) {

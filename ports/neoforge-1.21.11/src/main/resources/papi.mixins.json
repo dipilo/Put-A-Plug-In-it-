@@ -10,9 +10,7 @@
   ],
   "client": [
     "memoryleakfix.TextureUtilFreeBufferMixin",
-    "memoryleakfix.MinecraftScreenshotMixin",
-    "memoryleakfix.MinecraftTargetClearMixin"
-  ],
+    "memoryleakfix.MinecraftScreenshotMixin"],
   "injectors": {
     "defaultRequire": 1
   },
@@ -20,3 +18,5 @@
     "requireAnnotations": true
   }
 }
+
+

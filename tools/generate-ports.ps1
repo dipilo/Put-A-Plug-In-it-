@@ -4,6 +4,27 @@ $root = Split-Path -Parent $PSScriptRoot
 $portsRoot = Join-Path $root 'ports'
 $iconSource = 'C:\Users\sgibe\Downloads\PAPI.png'
 
+function Get-RootModVersion {
+    $gradlePropsPath = Join-Path $root 'gradle.properties'
+    if (-not (Test-Path $gradlePropsPath)) {
+        throw "Could not find root gradle.properties at $gradlePropsPath"
+    }
+
+    $line = Get-Content -Path $gradlePropsPath | Where-Object { $_ -match '^\s*mod_version\s*=' } | Select-Object -First 1
+    if (-not $line) {
+        throw "mod_version is missing from $gradlePropsPath"
+    }
+
+    $value = ($line -split '=', 2)[1].Trim()
+    if ([string]::IsNullOrWhiteSpace($value)) {
+        throw "mod_version in $gradlePropsPath is empty"
+    }
+
+    return $value
+}
+
+$modVersion = Get-RootModVersion
+
 if (Test-Path $portsRoot) {
     Get-ChildItem -Force $portsRoot | ForEach-Object {
         try {
@@ -1286,7 +1307,7 @@ plugins {
 }
 
 group = 'com.dipilodopilasaurus'
-version = "${MinecraftVersion}-forge-1.0.2"
+version = "${MinecraftVersion}-forge-$modVersion"
 base { archivesName = 'papi' }
 
 java {
@@ -1418,7 +1439,7 @@ plugins {
 }
 
 group = 'com.dipilodopilasaurus'
-version = "${MinecraftVersion}-neoforge-1.0.2"
+version = "${MinecraftVersion}-neoforge-$modVersion"
 base { archivesName = 'papi' }
 
 java {
@@ -1574,7 +1595,7 @@ plugins {
 }
 
 group = 'com.dipilodopilasaurus'
-version = "${MinecraftVersion}-fabric-1.0.2"
+version = "${MinecraftVersion}-fabric-$modVersion"
 base { archivesName = 'papi' }
 
 repositories {
@@ -1675,21 +1696,21 @@ if ([string]::IsNullOrWhiteSpace($java17Home)) {
     $profiles += [pscustomobject]@{ profile = 'forge-1.19.x'; loader = 'forge'; minecraft = '1.19-1.19.4' }
 }
 
-New-ForgeProfile -Name 'forge-1.20.1' -MinecraftVersion '1.20.1' -ForgeVersion '47.4.16' -ForgeGradleVersion '[6.0.16,6.2)' -MinecraftRange '[1.20.1,1.21)' -ForgeRange '[47,)' -LoaderRange '[47,)' -PackFormat 15 -JavaVersion 17 -GradleVersion '8.12' -IncludeEntityMemoriesFix $false
-$profiles += [pscustomobject]@{ profile = 'forge-1.20.1'; loader = 'forge'; minecraft = '1.20.1' }
+New-ForgeProfile -Name 'forge-1.20.1-1.20.6' -MinecraftVersion '1.20.1' -ForgeVersion '47.4.16' -ForgeGradleVersion '[6.0.16,6.2)' -MinecraftRange '[1.20.1,1.21)' -ForgeRange '[47,)' -LoaderRange '[47,)' -PackFormat 15 -JavaVersion 17 -GradleVersion '8.12' -IncludeEntityMemoriesFix $false
+$profiles += [pscustomobject]@{ profile = 'forge-1.20.1-1.20.6'; loader = 'forge'; minecraft = '1.20.1-1.20.6' }
 
 # NeoForge targets
-New-NeoProfile -Name 'neoforge-1.20.4' -MinecraftVersion '1.20.4' -NeoVersion '20.4.223' -NeoPluginVersion '7.0.101' -PluginId 'net.neoforged.gradle.userdev' -MinecraftRange '[1.20.4,1.21)' -NeoRange '[20.4,)' -LoaderRange '[2,)' -PackFormat 22 -JavaVersion 17 -GradleVersion '8.12'
-$profiles += [pscustomobject]@{ profile = 'neoforge-1.20.4'; loader = 'neoforge'; minecraft = '1.20.4' }
+New-NeoProfile -Name 'neoforge-1.20.4-1.20.6' -MinecraftVersion '1.20.4' -NeoVersion '20.4.223' -NeoPluginVersion '7.0.101' -PluginId 'net.neoforged.gradle.userdev' -MinecraftRange '[1.20.4,1.21)' -NeoRange '[20.4,)' -LoaderRange '[2,)' -PackFormat 22 -JavaVersion 17 -GradleVersion '8.12'
+$profiles += [pscustomobject]@{ profile = 'neoforge-1.20.4-1.20.6'; loader = 'neoforge'; minecraft = '1.20.4-1.20.6' }
 
 New-NeoProfile -Name 'neoforge-1.21.0-1.21.1' -MinecraftVersion '1.21.1' -NeoVersion '21.1.129' -NeoPluginVersion '2.0.134' -PluginId 'net.neoforged.moddev' -MinecraftRange '[1.21,1.21.2)' -NeoRange '[21.0.0,21.2.0)' -LoaderRange '[4,)' -PackFormat 34 -JavaVersion 21 -GradleVersion '8.12'
 $profiles += [pscustomobject]@{ profile = 'neoforge-1.21.0-1.21.1'; loader = 'neoforge'; minecraft = '1.21-1.21.1' }
 
-New-NeoProfile -Name 'neoforge-1.21.4' -MinecraftVersion '1.21.4' -NeoVersion '21.4.136' -NeoPluginVersion '2.0.134' -PluginId 'net.neoforged.moddev' -MinecraftRange '[1.21.4,1.21.5)' -NeoRange '[21.4.0,)' -LoaderRange '[4,)' -PackFormat 46 -JavaVersion 21 -GradleVersion '8.12'
-$profiles += [pscustomobject]@{ profile = 'neoforge-1.21.4'; loader = 'neoforge'; minecraft = '1.21.4' }
+New-NeoProfile -Name 'neoforge-1.21.2-1.21.4' -MinecraftVersion '1.21.4' -NeoVersion '21.4.136' -NeoPluginVersion '2.0.134' -PluginId 'net.neoforged.moddev' -MinecraftRange '[1.21.4,1.21.5)' -NeoRange '[21.4.0,)' -LoaderRange '[4,)' -PackFormat 46 -JavaVersion 21 -GradleVersion '8.12'
+$profiles += [pscustomobject]@{ profile = 'neoforge-1.21.2-1.21.4'; loader = 'neoforge'; minecraft = '1.21.2-1.21.4' }
 
-New-NeoProfile -Name 'neoforge-1.21.5' -MinecraftVersion '1.21.5' -NeoVersion '21.5.80' -NeoPluginVersion '2.0.134' -PluginId 'net.neoforged.moddev' -MinecraftRange '[1.21.5,1.21.6)' -NeoRange '[21.5.0,)' -LoaderRange '[4,)' -PackFormat 55 -JavaVersion 21 -GradleVersion '8.12'
-$profiles += [pscustomobject]@{ profile = 'neoforge-1.21.5'; loader = 'neoforge'; minecraft = '1.21.5' }
+New-NeoProfile -Name 'neoforge-1.21.5-1.21.7' -MinecraftVersion '1.21.5' -NeoVersion '21.5.80' -NeoPluginVersion '2.0.134' -PluginId 'net.neoforged.moddev' -MinecraftRange '[1.21.5,1.21.6)' -NeoRange '[21.5.0,)' -LoaderRange '[4,)' -PackFormat 55 -JavaVersion 21 -GradleVersion '8.12'
+$profiles += [pscustomobject]@{ profile = 'neoforge-1.21.5-1.21.7'; loader = 'neoforge'; minecraft = '1.21.5-1.21.7' }
 
 New-NeoProfile -Name 'neoforge-1.21.8' -MinecraftVersion '1.21.8' -NeoVersion '21.8.29' -NeoPluginVersion '2.0.134' -PluginId 'net.neoforged.moddev' -MinecraftRange '[1.21.8,1.21.9)' -NeoRange '[21.6.0,21.9.0)' -LoaderRange '[4,)' -PackFormat 64 -JavaVersion 21 -GradleVersion '8.12'
 $profiles += [pscustomobject]@{ profile = 'neoforge-1.21.8'; loader = 'neoforge'; minecraft = '1.21.8' }
@@ -1701,20 +1722,20 @@ New-NeoProfile -Name 'neoforge-1.21.11' -MinecraftVersion '1.21.11' -NeoVersion 
 $profiles += [pscustomobject]@{ profile = 'neoforge-1.21.11'; loader = 'neoforge'; minecraft = '1.21.11' }
 
 # Fabric targets
-New-FabricProfile -Name 'fabric-1.19.2' -MinecraftVersion '1.19.2' -LoaderVersion '0.15.7' -FabricApiVersion '0.77.0+1.19.2' -LoomVersion '1.10.+' -YarnMappings '1.19.2+build.28' -PackFormat 9 -JavaVersion 17 -GradleVersion '8.12'
-$profiles += [pscustomobject]@{ profile = 'fabric-1.19.2'; loader = 'fabric'; minecraft = '1.19.2' }
+New-FabricProfile -Name 'fabric-1.17-1.19.2' -MinecraftVersion '1.19.2' -LoaderVersion '0.15.7' -FabricApiVersion '0.77.0+1.19.2' -LoomVersion '1.10.+' -YarnMappings '1.19.2+build.28' -PackFormat 9 -JavaVersion 17 -GradleVersion '8.12'
+$profiles += [pscustomobject]@{ profile = 'fabric-1.17-1.19.2'; loader = 'fabric'; minecraft = '1.17-1.19.2' }
 
-New-FabricProfile -Name 'fabric-1.19.4' -MinecraftVersion '1.19.4' -LoaderVersion '0.15.7' -FabricApiVersion '0.87.2+1.19.4' -LoomVersion '1.10.+' -YarnMappings '1.19.4+build.2' -PackFormat 13 -JavaVersion 17 -GradleVersion '8.12'
-$profiles += [pscustomobject]@{ profile = 'fabric-1.19.4'; loader = 'fabric'; minecraft = '1.19.4' }
+New-FabricProfile -Name 'fabric-1.19.3-1.19.4' -MinecraftVersion '1.19.4' -LoaderVersion '0.15.7' -FabricApiVersion '0.87.2+1.19.4' -LoomVersion '1.10.+' -YarnMappings '1.19.4+build.2' -PackFormat 13 -JavaVersion 17 -GradleVersion '8.12'
+$profiles += [pscustomobject]@{ profile = 'fabric-1.19.3-1.19.4'; loader = 'fabric'; minecraft = '1.19.3-1.19.4' }
 
 New-FabricProfile -Name 'fabric-1.20.1' -MinecraftVersion '1.20.1' -LoaderVersion '0.16.9' -FabricApiVersion '0.92.2+1.20.1' -LoomVersion '1.10.+' -YarnMappings '1.20.1+build.10' -PackFormat 15 -JavaVersion 17 -GradleVersion '8.12'
 $profiles += [pscustomobject]@{ profile = 'fabric-1.20.1'; loader = 'fabric'; minecraft = '1.20.1' }
 
-New-FabricProfile -Name 'fabric-1.20.4' -MinecraftVersion '1.20.4' -LoaderVersion '0.16.5' -FabricApiVersion '0.97.2+1.20.4' -LoomVersion '1.10.+' -YarnMappings '1.20.4+build.3' -PackFormat 22 -JavaVersion 17 -GradleVersion '8.12'
-$profiles += [pscustomobject]@{ profile = 'fabric-1.20.4'; loader = 'fabric'; minecraft = '1.20.4' }
+New-FabricProfile -Name 'fabric-1.20.4-1.20.6' -MinecraftVersion '1.20.4' -LoaderVersion '0.16.5' -FabricApiVersion '0.97.2+1.20.4' -LoomVersion '1.10.+' -YarnMappings '1.20.4+build.3' -PackFormat 22 -JavaVersion 17 -GradleVersion '8.12'
+$profiles += [pscustomobject]@{ profile = 'fabric-1.20.4-1.20.6'; loader = 'fabric'; minecraft = '1.20.4-1.20.6' }
 
-New-FabricProfile -Name 'fabric-1.21.1' -MinecraftVersion '1.21.1' -LoaderVersion '0.16.9' -FabricApiVersion '0.114.0+1.21.1' -LoomVersion '1.10.+' -YarnMappings '1.21.1+build.3' -PackFormat 34 -JavaVersion 21 -GradleVersion '8.12'
-$profiles += [pscustomobject]@{ profile = 'fabric-1.21.1'; loader = 'fabric'; minecraft = '1.21.1' }
+New-FabricProfile -Name 'fabric-1.21.1-1.21.11' -MinecraftVersion '1.21.1' -LoaderVersion '0.16.9' -FabricApiVersion '0.114.0+1.21.1' -LoomVersion '1.10.+' -YarnMappings '1.21.1+build.3' -PackFormat 34 -JavaVersion 21 -GradleVersion '8.12'
+$profiles += [pscustomobject]@{ profile = 'fabric-1.21.1-1.21.11'; loader = 'fabric'; minecraft = '1.21.1-1.21.11' }
 
 $index = [ordered]@{
     generatedAtUtc = [DateTime]::UtcNow.ToString('o')
@@ -1737,7 +1758,7 @@ From this repository root:
 
 ```powershell
 pwsh -File .\tools\generate-ports.ps1
-cd .\ports\forge-1.20.1
+cd .\ports\forge-1.20.1-1.20.6
 .\gradlew.bat build
 ```
 

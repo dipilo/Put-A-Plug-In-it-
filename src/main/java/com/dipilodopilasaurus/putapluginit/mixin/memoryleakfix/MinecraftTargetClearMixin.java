@@ -29,25 +29,25 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Minecraft.class)
 public abstract class MinecraftTargetClearMixin {
-	@Shadow
-	@Nullable
-	public Entity crosshairPickEntity;
+    @Shadow
+    @Nullable
+    public Entity crosshairPickEntity;
 
-	@Shadow
-	@Nullable
-	public HitResult hitResult;
+    @Shadow
+    @Nullable
+    public HitResult hitResult;
 
-	@Inject(
-			method = "updateScreenAndTick",
-			at = @At(
-					value = "INVOKE",
-					target = "Lnet/minecraft/client/Minecraft;runTick(Z)V",
-					shift = At.Shift.BEFORE
-			),
-			require = 0
-	)
-	private void papiResetTargetState(CallbackInfo ci) {
-		this.crosshairPickEntity = null;
-		this.hitResult = null;
-	}
+    @Inject(
+            method = "updateScreenAndTick",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/Minecraft;runTick(Z)V",
+                    shift = At.Shift.BEFORE
+            ),
+            require = 0
+    )
+    private void papiResetTargetState(CallbackInfo ci) {
+        this.crosshairPickEntity = null;
+        this.hitResult = null;
+    }
 }

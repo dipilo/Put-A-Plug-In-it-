@@ -39,7 +39,8 @@ public class PutAPlugInIt {
             if (event.phase == TickEvent.Phase.END) {
                 TagKeyLeakFix.applyIfNeeded();
                 SophisticatedCoreLeakFix.onClientTickEnd();
-                ImmediatelyFastCompat.onClientTickEnd();
+                
+                TargetEntityLeakFix.onClientTickEnd();
             }
         }
 

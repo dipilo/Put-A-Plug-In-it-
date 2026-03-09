@@ -10,11 +10,27 @@ From this repository root:
 
 ```powershell
 pwsh -File .\tools\generate-ports.ps1
-cd .\ports\forge-1.20.1
+cd .\ports\forge-1.20.1-1.20.6
 .\gradlew.bat build
 ```
 
 (If wrapper is missing in a generated profile, run the build with a local Gradle install.)
+
+## Version bump
+
+Single source of truth: `gradle.properties` → `mod_version`.
+
+One-command bump (and update current generated `ports/*/build.gradle` files):
+
+```powershell
+.\tools\bump-version.ps1 -Version 1.1.1 -UpdatePorts
+```
+
+After bumping, regenerate ports whenever needed:
+
+```powershell
+pwsh -File .\tools\generate-ports.ps1
+```
 
 ## Profiles
 

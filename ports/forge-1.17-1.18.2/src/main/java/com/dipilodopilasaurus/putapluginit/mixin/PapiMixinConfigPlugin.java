@@ -75,14 +75,17 @@ public final class PapiMixinConfigPlugin implements IMixinConfigPlugin {
 			return;
 		}
 		checkedVersion = true;
-		try {
-			Class<?> sharedConstantsClass = Class.forName("net.minecraft.SharedConstants");
-			Object version = sharedConstantsClass.getMethod("getCurrentVersion").invoke(null);
-			Object name = version.getClass().getMethod("getName").invoke(version);
-			minecraftVersion = name == null ? "" : name.toString();
-		} catch (ReflectiveOperationException | RuntimeException ignored) {
-			minecraftVersion = "";
+		String version = System.getProperty("fml.mcVersion");
+		if (version == null || version.isEmpty()) {
+			version = System.getProperty("minecraft.version");
 		}
+		if (version == null || version.isEmpty()) {
+			version = System.getProperty("minecraftVersion");
+		}
+		if (version == null || version.isEmpty()) {
+			version = System.getProperty("fabric.gameVersion");
+		}
+		minecraftVersion = version == null ? "" : version;
 	}
 
 	private boolean below(String version) {
@@ -141,13 +144,13 @@ public final class PapiMixinConfigPlugin implements IMixinConfigPlugin {
 	}
 
 	private static boolean isForgeLikeModLoaded(String modListClassName, String modId) throws ReflectiveOperationException {
-		Class<?> modListClass = Class.forName(modListClassName);
+		Class<?> modListClass = Class.forName(modListClassName, false, PapiMixinConfigPlugin.class.getClassLoader());
 		Object modList = modListClass.getMethod("get").invoke(null);
 		return (boolean) modListClass.getMethod("isLoaded", String.class).invoke(modList, modId);
 	}
 
 	private static boolean isFabricModLoaded(String modId) throws ReflectiveOperationException {
-		Class<?> loaderClass = Class.forName("net.fabricmc.loader.api.FabricLoader");
+		Class<?> loaderClass = Class.forName("net.fabricmc.loader.api.FabricLoader", false, PapiMixinConfigPlugin.class.getClassLoader());
 		Object loader = loaderClass.getMethod("getInstance").invoke(null);
 		return (boolean) loaderClass.getMethod("isModLoaded", String.class).invoke(loader, modId);
 	}

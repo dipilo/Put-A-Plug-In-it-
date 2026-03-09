@@ -1,11 +1,11 @@
-﻿plugins {
+plugins {
     id 'java'
     id 'idea'
     id 'net.neoforged.moddev' version '2.0.134'
 }
 
 group = 'com.dipilodopilasaurus'
-version = "1.21.8-neoforge-1.1.0"
+version = "1.21.8-neoforge-1.1.1"
 base { archivesName = 'papi' }
 
 java {
