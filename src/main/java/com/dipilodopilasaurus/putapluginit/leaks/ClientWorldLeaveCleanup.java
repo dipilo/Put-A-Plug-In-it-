@@ -18,69 +18,69 @@
 package com.dipilodopilasaurus.putapluginit.leaks;
 
 import com.dipilodopilasaurus.putapluginit.Config;
-import com.dipilodopilasaurus.putapluginit.PutAPlugInIt;
 import com.mojang.logging.LogUtils;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 import org.slf4j.Logger;
 
-@Mod.EventBusSubscriber(modid = PutAPlugInIt.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+/**
+ * Detects the client transition "in a world" -> "back to the main menu" and runs best-effort
+ * ModelManager cache cleanups at that boundary, where stale client-side model caches can
+ * otherwise be retained across world transitions.
+ */
 public final class ClientWorldLeaveCleanup {
-	private static final Logger LOGGER = LogUtils.getLogger();
-	private static boolean lastHadWorld = false;
+    private static final Logger LOGGER = LogUtils.getLogger();
 
-	private ClientWorldLeaveCleanup() {
-	}
+    private static boolean lastHadWorld = false;
 
-	@SubscribeEvent
-	public static void onClientTick(TickEvent.ClientTickEvent event) {
-		if (event.phase != TickEvent.Phase.END || !isAnyWorldLeaveCleanupEnabled()) {
-			return;
-		}
+    private ClientWorldLeaveCleanup() {
+    }
 
-		boolean hasWorld = MinecraftClientMitigations.tryHasClientWorld();
-		if (lastHadWorld && !hasWorld) {
-			runWorldLeaveCleanup();
-		}
-		lastHadWorld = hasWorld;
-	}
+    public static void onClientTickEnd() {
+        if (!isAnyWorldLeaveCleanupEnabled()) {
+            return;
+        }
 
-	private static boolean isAnyWorldLeaveCleanupEnabled() {
-		return Config.isClearModelManagerBlockStateToIdMapOnClientWorldLeaveEnabled()
-				|| Config.isClearModelManagerBakedModelMapsOnClientWorldLeaveEnabled();
-	}
+        boolean hasWorld = MinecraftClientMitigations.tryHasClientWorld();
+        if (lastHadWorld && !hasWorld) {
+            runWorldLeaveCleanup();
+        }
+        lastHadWorld = hasWorld;
+    }
 
-	private static void runWorldLeaveCleanup() {
-		cleanupBlockStateToIdMap();
-		cleanupBakedModelMaps();
-	}
+    private static boolean isAnyWorldLeaveCleanupEnabled() {
+        return Config.isClearModelManagerBlockStateToIdMapOnClientWorldLeaveEnabled()
+                || Config.isClearModelManagerBakedModelMapsOnClientWorldLeaveEnabled();
+    }
 
-	private static void cleanupBlockStateToIdMap() {
-		if (!Config.isClearModelManagerBlockStateToIdMapOnClientWorldLeaveEnabled()) {
-			return;
-		}
-		MinecraftClientMitigations.ClearResult result = MinecraftClientMitigations.tryClearModelManagerBlockStateToIntMap();
-		if (result.isClient() && !result.cleared()) {
-			LOGGER.info("[papi] World-leave cleanup (BlockState->id): no-op ({})", result.message());
-		}
-	}
+    private static void runWorldLeaveCleanup() {
+        cleanupBlockStateToIdMap();
+        cleanupBakedModelMaps();
+    }
 
-	private static void cleanupBakedModelMaps() {
-		if (!Config.isClearModelManagerBakedModelMapsOnClientWorldLeaveEnabled()) {
-			return;
-		}
-		int minSize = Math.max(0, Config.getClearModelManagerBakedModelMapsMinSize());
-		MinecraftClientMitigations.BakedModelMapClearResult result = MinecraftClientMitigations.tryClearLargeBakedModelMaps(minSize);
-		if (!result.isClient()) {
-			return;
-		}
-		if (result.clearedMaps() > 0) {
-			LOGGER.info("[papi] World-leave cleanup (baked-model maps): cleared {} maps / {} entries (minSize={}).", result.clearedMaps(), result.clearedEntries(), minSize);
-			return;
-		}
-		if (result.message() != null) {
-			LOGGER.info("[papi] World-leave cleanup (baked-model maps): no-op ({}).", result.message());
-		}
-	}
+    private static void cleanupBlockStateToIdMap() {
+        if (!Config.isClearModelManagerBlockStateToIdMapOnClientWorldLeaveEnabled()) {
+            return;
+        }
+        MinecraftClientMitigations.ClearResult result = MinecraftClientMitigations.tryClearModelManagerBlockStateToIntMap();
+        if (result.isClient() && !result.cleared()) {
+            LOGGER.info("[papi] World-leave cleanup (BlockState->id): no-op ({})", result.message());
+        }
+    }
+
+    private static void cleanupBakedModelMaps() {
+        if (!Config.isClearModelManagerBakedModelMapsOnClientWorldLeaveEnabled()) {
+            return;
+        }
+        int minSize = Math.max(0, Config.getClearModelManagerBakedModelMapsMinSize());
+        MinecraftClientMitigations.BakedModelMapClearResult result = MinecraftClientMitigations.tryClearLargeBakedModelMaps(minSize);
+        if (!result.isClient()) {
+            return;
+        }
+        if (result.clearedMaps() > 0) {
+            LOGGER.info("[papi] World-leave cleanup (baked-model maps): cleared {} maps / {} entries (minSize={}).", result.clearedMaps(), result.clearedEntries(), minSize);
+            return;
+        }
+        if (result.message() != null) {
+            LOGGER.info("[papi] World-leave cleanup (baked-model maps): no-op ({}).", result.message());
+        }
+    }
 }

@@ -19,32 +19,14 @@ package com.dipilodopilasaurus.putapluginit;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 public final class SophisticatedCoreLeakFix {
     private static final String GLOBAL_FIXED_VERSION = "1.4.6.1504";
     private static final String SOPHISTICATED_CORE_MODID = "sophisticatedcore";
     private static final String ITEMSTACKKEY_CLASS = "net.p3pp3rf1y.sophisticatedcore.inventory.ItemStackKey";
     private static final String CACHE_FIELD = "CACHE";
-        private static final Set<String> SUPPORTED_RUNTIME_MC_VERSIONS = new HashSet<>(Arrays.asList(
-            "1.18.2",
-            "1.19",
-            "1.19.1",
-            "1.19.2",
-            "1.20.1",
-            "1.20.4",
-            "1.21",
-            "1.21.1",
-            "1.21.4",
-            "1.21.5",
-            "1.21.8",
-            "1.21.10",
-            "1.21.11"
-        ));
 
     private static volatile boolean initTried = false;
     private static volatile boolean available = false;
@@ -82,7 +64,7 @@ public final class SophisticatedCoreLeakFix {
             if (cacheObj instanceof Map<?, ?>) {
                 Map<?, ?> map = (Map<?, ?>) cacheObj;
                 if (map.size() >= minSize) {
-                map.clear();
+                    map.clear();
                 }
             }
         } catch (Exception ignored) {
@@ -101,13 +83,7 @@ public final class SophisticatedCoreLeakFix {
             initTried = true;
 
             String scVersion = detectSophisticatedCoreVersion();
-            String runtimeMcVersion = detectRuntimeMinecraftVersion();
-            if (runtimeMcVersion == null || !isSupportedRuntimeMcVersion(runtimeMcVersion)) {
-                available = false;
-                return;
-            }
-
-            if (scVersion == null || !shouldApplyItemStackKeyFix(runtimeMcVersion, scVersion)) {
+            if (scVersion == null || !shouldApplyItemStackKeyFix(scVersion)) {
                 available = false;
                 return;
             }
@@ -152,6 +128,7 @@ public final class SophisticatedCoreLeakFix {
             if (!(maybeContainer instanceof Optional<?>)) {
                 return "";
             }
+
             Optional<?> optional = (Optional<?>) maybeContainer;
             if (!optional.isPresent()) {
                 return "";
@@ -180,6 +157,7 @@ public final class SophisticatedCoreLeakFix {
             if (!(maybeContainer instanceof Optional<?>)) {
                 return "";
             }
+
             Optional<?> optional = (Optional<?>) maybeContainer;
             if (!optional.isPresent()) {
                 return "";
@@ -195,18 +173,18 @@ public final class SophisticatedCoreLeakFix {
         }
     }
 
-    private static boolean shouldApplyItemStackKeyFix(String runtimeMcVersion, String scVersionText) {
-        ParsedVersion parsed = parseVersion(scVersionText);
+    private static boolean shouldApplyItemStackKeyFix(String version) {
+        ParsedVersion parsed = parseVersion(version);
         if (parsed == null) {
             return true;
         }
 
-        if (compareDotVersion(parsed.scVersion, GLOBAL_FIXED_VERSION) >= 0) {
+        if (compareDotVersion(parsed.scVersion(), GLOBAL_FIXED_VERSION) >= 0) {
             return false;
         }
 
-        String mcThreshold = getMcSpecificFixedVersion(runtimeMcVersion);
-        return mcThreshold == null || compareDotVersion(parsed.scVersion, mcThreshold) < 0;
+        String mcThreshold = getMcSpecificFixedVersion(parsed.mcVersion());
+        return mcThreshold == null || compareDotVersion(parsed.scVersion(), mcThreshold) < 0;
     }
 
     private static ParsedVersion parseVersion(String version) {
@@ -218,53 +196,7 @@ public final class SophisticatedCoreLeakFix {
         if (parts.length != 2) {
             return null;
         }
-        return new ParsedVersion(parts[1]);
-    }
-
-    private static String detectRuntimeMinecraftVersion() {
-        try {
-            Class<?> sharedConstantsClass = Class.forName("net.minecraft.SharedConstants", false, SophisticatedCoreLeakFix.class.getClassLoader());
-            Object worldVersion = invokeFirstNoArgMethod(sharedConstantsClass, "getCurrentVersion", "getGameVersion", "createGameVersion");
-            return extractVersionName(worldVersion);
-        } catch (ReflectiveOperationException ignored) {
-            return null;
-        }
-    }
-
-    private static Object invokeFirstNoArgMethod(Class<?> owner, String... methodNames) throws ReflectiveOperationException {
-        for (String methodName : methodNames) {
-            try {
-                Method method = owner.getMethod(methodName);
-                return method.invoke(null);
-            } catch (NoSuchMethodException ignored) {
-                // Try next candidate.
-            }
-        }
-        throw new NoSuchMethodException("No matching SharedConstants version accessor found");
-    }
-
-    private static String extractVersionName(Object worldVersion) {
-        if (worldVersion == null) {
-            return null;
-        }
-        try {
-            Object value = worldVersion.getClass().getMethod("getName").invoke(worldVersion);
-            return value == null ? null : value.toString();
-        } catch (ReflectiveOperationException ignored) {
-            try {
-                Object value = worldVersion.getClass().getMethod("getId").invoke(worldVersion);
-                return value == null ? null : value.toString();
-            } catch (ReflectiveOperationException ignoredAgain) {
-                return worldVersion.toString();
-            }
-        }
-    }
-
-    private static boolean isSupportedRuntimeMcVersion(String runtimeMcVersion) {
-        if (runtimeMcVersion == null) {
-            return false;
-        }
-        return SUPPORTED_RUNTIME_MC_VERSIONS.contains(runtimeMcVersion);
+        return new ParsedVersion(parts[0], parts[1]);
     }
 
     private static String getMcSpecificFixedVersion(String mcVersion) {
@@ -319,10 +251,20 @@ public final class SophisticatedCoreLeakFix {
     }
 
     private static final class ParsedVersion {
+        private final String mcVersion;
         private final String scVersion;
 
-        private ParsedVersion(String scVersion) {
+        private ParsedVersion(String mcVersion, String scVersion) {
+            this.mcVersion = mcVersion;
             this.scVersion = scVersion;
+        }
+
+        private String mcVersion() {
+            return mcVersion;
+        }
+
+        private String scVersion() {
+            return scVersion;
         }
     }
 }

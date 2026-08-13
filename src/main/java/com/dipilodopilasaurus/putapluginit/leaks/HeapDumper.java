@@ -18,45 +18,49 @@
 package com.dipilodopilasaurus.putapluginit.leaks;
 
 import com.mojang.logging.LogUtils;
-import net.minecraftforge.fml.loading.FMLPaths;
 import org.slf4j.Logger;
 
 import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
-final class HeapDumper {
-	private static final Logger LOGGER = LogUtils.getLogger();
-	private static final DateTimeFormatter TS = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
+/**
+ * Writes an on-demand {@code .hprof} heap dump via the HotSpot diagnostic MXBean.
+ */
+public final class HeapDumper {
+    private static final Logger LOGGER = LogUtils.getLogger();
+    private static final DateTimeFormatter TS = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
 
-	record DumpResult(boolean success, String path, String message) {
-	}
+    public record DumpResult(boolean success, String path, String message) {
+    }
 
-	private HeapDumper() {
-	}
+    private HeapDumper() {
+    }
 
-	static DumpResult tryDumpHeap() {
-		try {
-			Path outDir = FMLPaths.GAMEDIR.get().resolve("papi-heap-dumps");
-			Files.createDirectories(outDir);
-			Path outFile = outDir.resolve("heap-" + TS.format(LocalDateTime.now()) + ".hprof");
+    public static DumpResult tryDumpHeap() {
+        try {
+            Path outDir = Paths.get("").toAbsolutePath().resolve("papi-heap-dumps");
+            Files.createDirectories(outDir);
+            Path outFile = outDir.resolve("heap-" + TS.format(LocalDateTime.now(ZoneId.systemDefault())) + ".hprof");
 
-			// Reflection avoids hard dependency on com.sun.management at compile time.
-			Class<?> hsClazz = Class.forName("com.sun.management.HotSpotDiagnosticMXBean");
-			Object bean = ManagementFactory.newPlatformMXBeanProxy(
-					ManagementFactory.getPlatformMBeanServer(),
-					"com.sun.management:type=HotSpotDiagnostic",
-					hsClazz);
+            // Reflection avoids a hard dependency on com.sun.management at compile time.
+            Class<?> hsClazz = Class.forName("com.sun.management.HotSpotDiagnosticMXBean");
+            Object bean = ManagementFactory.newPlatformMXBeanProxy(
+                    ManagementFactory.getPlatformMBeanServer(),
+                    "com.sun.management:type=HotSpotDiagnostic",
+                    hsClazz);
 
-			hsClazz.getMethod("dumpHeap", String.class, boolean.class)
-					.invoke(bean, outFile.toAbsolutePath().toString(), Boolean.TRUE);
+            hsClazz.getMethod("dumpHeap", String.class, boolean.class)
+                    .invoke(bean, outFile.toAbsolutePath().toString(), Boolean.TRUE);
 
-			LOGGER.info("[papi] Heap dump written to {}", outFile.toAbsolutePath());
-			return new DumpResult(true, outFile.toAbsolutePath().toString(), "ok");
-		} catch (Exception t) {
-			return new DumpResult(false, "", t.getClass().getSimpleName() + ": " + (t.getMessage() == null ? "" : t.getMessage()));
-		}
-	}
+            LOGGER.info("[papi] Heap dump written to {}", outFile.toAbsolutePath());
+            return new DumpResult(true, outFile.toAbsolutePath().toString(), "ok");
+        } catch (Exception t) {
+            return new DumpResult(false, "", t.getClass().getSimpleName() + ": " + (t.getMessage() == null ? "" : t.getMessage()));
+        }
+    }
 }

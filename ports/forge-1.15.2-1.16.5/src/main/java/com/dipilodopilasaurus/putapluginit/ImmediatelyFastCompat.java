@@ -66,9 +66,8 @@ public final class ImmediatelyFastCompat {
             }
 
             boolean changed = false;
-            if (isIntelGpu()) {
+            if (isIntelUhd()) {
                 changed |= setBoolean(root, "experimental_screen_batching", false);
-                changed |= setBoolean(root, "avoid_redundant_framebuffer_switching", false);
             }
 
             if (isModLoaded(MLF_MODID)) {
@@ -107,13 +106,14 @@ public final class ImmediatelyFastCompat {
         return true;
     }
 
-    private static boolean isIntelGpu() {
+    private static boolean isIntelUhd() {
         try {
             String vendor = GL11C.glGetString(GL11C.GL_VENDOR);
             String renderer = GL11C.glGetString(GL11C.GL_RENDERER);
             String v = vendor == null ? "" : vendor.toLowerCase();
             String r = renderer == null ? "" : renderer.toLowerCase();
-            return v.contains("intel") || r.contains("intel") || r.contains("iris") || r.contains("arc");
+            return (v.contains("intel") || r.contains("intel"))
+                    && (r.contains("uhd") || r.contains("iris xe") || r.contains("iris(r) xe"));
         } catch (RuntimeException ignored) {
             return false;
         }

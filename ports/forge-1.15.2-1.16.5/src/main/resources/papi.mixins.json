@@ -6,11 +6,13 @@
   "refmap": "papi.refmap.json",
   "plugin": "com.dipilodopilasaurus.putapluginit.mixin.PapiMixinConfigPlugin",
   "mixins": [
-    "memoryleakfix.BiomeThreadLocalMixin"
+    "memoryleakfix.BiomeThreadLocalMixin",
+    "memoryleakfix.DrownedNavigationMixin",
+    "memoryleakfix.ServerWorldNavigationMixin"
   ],
   "client": [
-    "memoryleakfix.TextureUtilFreeBufferMixin",
-    "memoryleakfix.MinecraftScreenshotMixin"],
+    "memoryleakfix.TextureUtilFreeBufferMixin"
+  ],
   "injectors": {
     "defaultRequire": 1
   },
@@ -18,5 +20,3 @@
     "requireAnnotations": true
   }
 }
-
-

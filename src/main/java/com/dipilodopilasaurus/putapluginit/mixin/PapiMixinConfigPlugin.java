@@ -26,152 +26,172 @@ import java.util.List;
 import java.util.Set;
 
 public final class PapiMixinConfigPlugin implements IMixinConfigPlugin {
-	private static final String PORTED_MLF_MIXIN_PACKAGE = "com.dipilodopilasaurus.putapluginit.mixin.memoryleakfix.";
-	private static final String MLF_MOD_ID = "memoryleakfix";
-	private boolean checkedMemoryLeakFixPresence;
-	private boolean memoryLeakFixPresent;
-	private boolean checkedVersion;
-	private String minecraftVersion = "";
+    private static final String PORTED_MLF_MIXIN_PACKAGE = "com.dipilodopilasaurus.putapluginit.mixin.memoryleakfix.";
+    private static final String MLF_MOD_ID = "memoryleakfix";
+    private static final String EMF_MOD_ID = "entity_model_features";
+    private static final String ETF_MOD_ID = "entity_texture_features";
+    private boolean checkedMemoryLeakFixPresence;
+    private boolean memoryLeakFixPresent;
+    private boolean checkedVersion;
+    private String minecraftVersion = "";
 
-	@Override
-	public void onLoad(String mixinPackage) {
-		resolveMemoryLeakFixPresence();
-		resolveMinecraftVersion();
-	}
+    @Override
+    public void onLoad(String mixinPackage) {
+        resolveMinecraftVersion();
+    }
 
-	@Override
-	public String getRefMapperConfig() {
-		return null;
-	}
+    @Override
+    public String getRefMapperConfig() {
+        return null;
+    }
 
-	@Override
-	public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
-		resolveMemoryLeakFixPresence();
-		resolveMinecraftVersion();
-		if (memoryLeakFixPresent && mixinClassName.startsWith(PORTED_MLF_MIXIN_PACKAGE)) {
-			return false;
-		}
-		if (!mixinClassName.startsWith(PORTED_MLF_MIXIN_PACKAGE)) {
-			return true;
-		}
+    @Override
+    public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
+        resolveMemoryLeakFixPresence();
+        resolveMinecraftVersion();
+        if (memoryLeakFixPresent && mixinClassName.startsWith(PORTED_MLF_MIXIN_PACKAGE)) {
+            return false;
+        }
+        if (!mixinClassName.startsWith(PORTED_MLF_MIXIN_PACKAGE)) {
+            // The only injection PAPI makes in a per-entity, per-frame path; skip it when nothing needs it.
+            if (mixinClassName.endsWith("LivingEntityRenderPostMixin")) {
+                return isModLoaded(EMF_MOD_ID) || isModLoaded(ETF_MOD_ID);
+            }
+            return true;
+        }
 
-		if (mixinClassName.endsWith("TagKeyInternerMixin")) {
-			return below("1.19.0");
-		}
-		if (mixinClassName.endsWith("EntityClearMemoriesMixin")
-				|| mixinClassName.endsWith("LivingEntityClearMemoriesMixin")
-				|| mixinClassName.endsWith("BrainClearMemoriesMixin")) {
-			return below("1.20.0");
-		}
-		if (mixinClassName.endsWith("TextureUtilFreeBufferMixin")) {
-			return below("1.19.4");
-		}
+        if (mixinClassName.endsWith("TextureUtilFreeBufferMixin")) {
+            // 1.19.4 is where vanilla wrapped the read in its own memFree-on-IOException handler.
+            return below("1.19.4");
+        }
 
-		return true;
-	}
+        if (mixinClassName.endsWith("MinecraftScreenshotMixin")) {
+            // grabHugeScreenshot is gone from 1.21.5; applying anyway only adds a @Unique field.
+            return below("1.21.5");
+        }
 
-	private void resolveMinecraftVersion() {
-		if (checkedVersion) {
-			return;
-		}
-		checkedVersion = true;
-		String version = System.getProperty("fml.mcVersion");
-		if (version == null || version.isEmpty()) {
-			version = System.getProperty("minecraft.version");
-		}
-		if (version == null || version.isEmpty()) {
-			version = System.getProperty("minecraftVersion");
-		}
-		if (version == null || version.isEmpty()) {
-			version = System.getProperty("fabric.gameVersion");
-		}
-		minecraftVersion = version == null ? "" : version;
-	}
+        return true;
+    }
 
-	private boolean below(String version) {
-		return compareVersions(minecraftVersion, version) < 0;
-	}
+    private void resolveMinecraftVersion() {
+        if (checkedVersion) {
+            return;
+        }
+        checkedVersion = true;
+        String version = System.getProperty("fml.mcVersion");
+        if (version == null || version.isEmpty()) {
+            version = System.getProperty("minecraft.version");
+        }
+        if (version == null || version.isEmpty()) {
+            version = System.getProperty("minecraftVersion");
+        }
+        if (version == null || version.isEmpty()) {
+            version = System.getProperty("fabric.gameVersion");
+        }
+        minecraftVersion = version == null ? "" : version;
+    }
 
-	private static int compareVersions(String left, String right) {
-		String[] leftParts = sanitize(left).split("\\.");
-		String[] rightParts = sanitize(right).split("\\.");
-		int length = Math.max(leftParts.length, rightParts.length);
-		for (int index = 0; index < length; index++) {
-			int l = index < leftParts.length ? parseInt(leftParts[index]) : 0;
-			int r = index < rightParts.length ? parseInt(rightParts[index]) : 0;
-			if (l != r) {
-				return Integer.compare(l, r);
-			}
-		}
-		return 0;
-	}
+    private boolean below(String version) {
+        return compareVersions(minecraftVersion, version) < 0;
+    }
 
-	private static String sanitize(String value) {
-		if (value == null) {
-			return "0";
-		}
-		String base = value.trim();
-		int space = base.indexOf(' ');
-		if (space >= 0) {
-			base = base.substring(0, space);
-		}
-		return base.replaceAll("[^0-9.]", "");
-	}
+    private static int compareVersions(String left, String right) {
+        String[] leftParts = sanitize(left).split("\\.");
+        String[] rightParts = sanitize(right).split("\\.");
+        int length = Math.max(leftParts.length, rightParts.length);
+        for (int index = 0; index < length; index++) {
+            int l = index < leftParts.length ? parseInt(leftParts[index]) : 0;
+            int r = index < rightParts.length ? parseInt(rightParts[index]) : 0;
+            if (l != r) {
+                return Integer.compare(l, r);
+            }
+        }
+        return 0;
+    }
 
-	private static int parseInt(String part) {
-		if (part == null || part.isEmpty()) {
-			return 0;
-		}
-		try {
-			return Integer.parseInt(part);
-		} catch (NumberFormatException ignored) {
-			return 0;
-		}
-	}
+    private static String sanitize(String value) {
+        if (value == null) {
+            return "0";
+        }
+        String base = value.trim();
+        int space = base.indexOf(' ');
+        if (space >= 0) {
+            base = base.substring(0, space);
+        }
+        return base.replaceAll("[^0-9.]", "");
+    }
 
-	private void resolveMemoryLeakFixPresence() {
-		if (checkedMemoryLeakFixPresence) {
-			return;
-		}
-		checkedMemoryLeakFixPresence = true;
-		try {
-			memoryLeakFixPresent = isForgeLikeModLoaded("net.minecraftforge.fml.ModList", MLF_MOD_ID)
-					|| isForgeLikeModLoaded("net.neoforged.fml.ModList", MLF_MOD_ID)
-					|| isFabricModLoaded(MLF_MOD_ID);
-		} catch (ReflectiveOperationException | RuntimeException ignored) {
-			memoryLeakFixPresent = false;
-		}
-	}
+    private static int parseInt(String part) {
+        if (part == null || part.isEmpty()) {
+            return 0;
+        }
+        try {
+            return Integer.parseInt(part);
+        } catch (NumberFormatException ignored) {
+            return 0;
+        }
+    }
 
-	private static boolean isForgeLikeModLoaded(String modListClassName, String modId) throws ReflectiveOperationException {
-		Class<?> modListClass = Class.forName(modListClassName, false, PapiMixinConfigPlugin.class.getClassLoader());
-		Object modList = modListClass.getMethod("get").invoke(null);
-		return (boolean) modListClass.getMethod("isLoaded", String.class).invoke(modList, modId);
-	}
+    /**
+     * Only a positive result is latched. Forge/NeoForge's {@code ModList} is not up when the mixin
+     * config loads, so an early probe answers "absent" for a MemoryLeakFix that is in fact installed;
+     * re-probing until it says yes keeps that from being cached for the session.
+     */
+    private void resolveMemoryLeakFixPresence() {
+        if (checkedMemoryLeakFixPresence) {
+            return;
+        }
+        memoryLeakFixPresent = isModLoaded(MLF_MOD_ID);
+        checkedMemoryLeakFixPresence = memoryLeakFixPresent;
+    }
 
-	private static boolean isFabricModLoaded(String modId) throws ReflectiveOperationException {
-		Class<?> loaderClass = Class.forName("net.fabricmc.loader.api.FabricLoader", false, PapiMixinConfigPlugin.class.getClassLoader());
-		Object loader = loaderClass.getMethod("getInstance").invoke(null);
-		return (boolean) loaderClass.getMethod("isModLoaded", String.class).invoke(loader, modId);
-	}
+    /**
+     * Each probe swallows its own failure: on Fabric the Forge {@code ModList} lookup throws
+     * {@code ClassNotFoundException}, and a shared catch would short-circuit the Fabric probe.
+     */
+    private static boolean isModLoaded(String modId) {
+        return isForgeLikeModLoaded("net.minecraftforge.fml.ModList", modId)
+                || isForgeLikeModLoaded("net.neoforged.fml.ModList", modId)
+                || isFabricModLoaded(modId);
+    }
 
-	@Override
-	public void acceptTargets(Set<String> myTargets, Set<String> otherTargets) {
-		// No target remapping required for this plugin.
-	}
+    private static boolean isForgeLikeModLoaded(String modListClassName, String modId) {
+        try {
+            Class<?> modListClass = Class.forName(modListClassName, false, PapiMixinConfigPlugin.class.getClassLoader());
+            Object modList = modListClass.getMethod("get").invoke(null);
+            return (boolean) modListClass.getMethod("isLoaded", String.class).invoke(modList, modId);
+        } catch (ReflectiveOperationException | RuntimeException ignored) {
+            return false; // not this loader, or the mod list is not up yet
+        }
+    }
 
-	@Override
-	public List<String> getMixins() {
-		return Collections.emptyList();
-	}
+    private static boolean isFabricModLoaded(String modId) {
+        try {
+            Class<?> loaderClass = Class.forName("net.fabricmc.loader.api.FabricLoader", false, PapiMixinConfigPlugin.class.getClassLoader());
+            Object loader = loaderClass.getMethod("getInstance").invoke(null);
+            return (boolean) loaderClass.getMethod("isModLoaded", String.class).invoke(loader, modId);
+        } catch (ReflectiveOperationException | RuntimeException ignored) {
+            return false; // not this loader, or the mod list is not up yet
+        }
+    }
 
-	@Override
-	public void preApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
-		// No pre-apply bytecode mutation required.
-	}
+    @Override
+    public void acceptTargets(Set<String> myTargets, Set<String> otherTargets) {
+        // No target remapping required for this plugin.
+    }
 
-	@Override
-	public void postApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
-		// No post-apply bytecode mutation required.
-	}
+    @Override
+    public List<String> getMixins() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public void preApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
+        // No pre-apply bytecode mutation required.
+    }
+
+    @Override
+    public void postApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
+        // No post-apply bytecode mutation required.
+    }
 }

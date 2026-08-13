@@ -3,6 +3,10 @@
 build/
 **/build/
 
+# Stonecutter generated per-node projects (recreated by stonecutterGenerate)
+versions/
+.stonecutter/
+
 # Forge/Fabric run dirs and generated runtime artifacts
 run/
 run_client/
@@ -38,4 +42,16 @@ replay_pid*
 !gradle/wrapper/gradle-wrapper.jar
 
 # Wiki
-FEATURE_MATRIX.md
+*.md
+!README.md
+!NOTICE.md
+!FEATURE_MATRIX.md
+
+# Tools
+tools/
+buildSrc*
+# third-party jars
+libs/*.jar
+
+# Modpack-specific personal optimizations... don't worry about it
+src/breadday*

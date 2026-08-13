@@ -1,0 +1,30 @@
+license = "LGPL-3.0-or-later"
+
+modLoader = "javafml"
+loaderVersion = "[1,)"
+
+[[mods]]
+modId = "${id}"
+displayName = "${name}"
+version = "${version}"
+authors = "Dipilodopilasaurus"
+description = "${description}"
+logoFile = "assets/papi/icon.png"
+displayURL = "https://github.com/dipilo/Put-A-Plug-In-it"
+
+[[mixins]]
+config = "papi.mixins.json"
+
+[[dependencies.${id}]]
+modId = "neoforge"
+type = "required"
+versionRange = "${loader}"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.${id}]]
+modId = "minecraft"
+type = "required"
+versionRange = "${minecraft}"
+ordering = "NONE"
+side = "BOTH"

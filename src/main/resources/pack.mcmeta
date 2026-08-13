@@ -1,6 +1,6 @@
 {
   "pack": {
-    "description": "papi!",
-    "pack_format": 15
+    "description": "Put A Plug In it!",
+    "pack_format": ${pack_format}
   }
 }

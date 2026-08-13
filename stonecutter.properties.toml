@@ -1,0 +1,193 @@
+# Centralized mod + dependency properties.
+# See https://stonecutter.kikugie.dev/wiki/config/properties#centralized-properties
+mod.id = "papi"
+mod.name = "Put A Plug In it!"
+mod.group = "com.dipilodopilasaurus"
+mod.version = "1.2.1"
+mod.description = "All-in-one memory leak fix and memory optimization mod."
+
+deps.fabric_loader = "0.17.3"
+loomx.loom_version = "1.17-SNAPSHOT"
+
+# ---- 1.20.1 ----
+["1.20.1"]
+mod.mc_releases = ["1.20.1"]
+
+[fabric."1.20.1"]
+mod.mc_compat = ">=1.20 <=1.20.1"
+deps.fabric_api = "0.92.2+1.20.1"
+
+[forge."1.20.1"]
+# Covers 1.20.1-1.20.4 (Forge 47-49). No 1.20.2+ Forge node can be built here - NeoFormRuntime only
+# emits the SRG<->named mapping ModDevGradle's legacyforge path needs for Minecraft <= 1.20.1
+# (ProcessGeneration hardcodes that cutoff), so createMinecraftArtifacts dies before javac. The range
+# is instead verified against the shipped jar: every SRG id it links (17, incl. the require=1
+# EntityTickList mixin) is byte-identical in the mcp_config tables for 1.20.2/1.20.3/1.20.4, and all
+# 22 net.minecraftforge classes+members it touches exist in Forge 48 and 49. Stops below 1.20.5:
+# that is where Minecraft's java_target goes 17 -> 21, and this node builds Java 17.
+mod.mc_releases = ["1.20.1", "1.20.2", "1.20.3", "1.20.4"]
+mod.mc_compat = "[1.20.1,1.20.5)"
+mod.loader_compat = "[47,50)"
+deps.forge = "47.4.16"
+
+# ---- 1.21.1 ----
+["1.21.1"]
+mod.mc_releases = ["1.21", "1.21.1"]
+
+[fabric."1.21.1"]
+mod.mc_compat = ">=1.21 <=1.21.1"
+deps.fabric_api = "0.116.4+1.21.1"
+
+[neoforge."1.21.1"]
+mod.mc_compat = "[1.21, 1.21.1]"
+mod.loader_compat = "[21.0,21.2)"
+deps.neo_loader = "21.1.234"
+
+# ---- 26.2 (latest; calendar versioning. NeoForge still beta) ----
+["26.2"]
+mod.mc_releases = ["26.2"]
+
+[fabric."26.2"]
+mod.mc_compat = ">=26.2 <26.3"
+deps.fabric_api = "0.152.1+26.2"
+deps.fabric_loader = "0.18.4"
+
+[neoforge."26.2"]
+mod.mc_compat = "[26.2,26.3)"
+mod.loader_compat = "[26.2,26.3)"
+deps.neo_loader = "26.2.0.25-beta"
+
+# ---- 26.1 (MC 26.1.2; calendar versioning) ----
+["26.1"]
+mod.mc_releases = ["26.1", "26.1.1", "26.1.2"]
+
+[fabric."26.1"]
+mod.mc_compat = ">=26.1 <26.2"
+deps.fabric_api = "0.155.2+26.1.2"
+deps.fabric_loader = "0.18.4"
+
+[neoforge."26.1"]
+mod.mc_compat = "[26.1,26.2)"
+mod.loader_compat = "[26.1,26.2)"
+deps.neo_loader = "26.1.2.76"
+
+# ---- 1.21.11 ----
+["1.21.11"]
+mod.mc_releases = ["1.21.11"]
+
+[fabric."1.21.11"]
+mod.mc_compat = "1.21.11"
+deps.fabric_api = "0.141.4+1.21.11"
+
+[neoforge."1.21.11"]
+# Upper bound is 26.1, the next node up; 1.21.11 was the last pre-calendar release.
+mod.mc_compat = "[1.21.11,26.1)"
+mod.loader_compat = "[21.11,26.1)"
+deps.neo_loader = "21.11.42"
+
+# ---- 1.21.10 (covers 1.21.9-1.21.10) ----
+["1.21.10"]
+mod.mc_releases = ["1.21.9", "1.21.10"]
+
+[fabric."1.21.10"]
+mod.mc_compat = ">=1.21.9 <=1.21.10"
+deps.fabric_api = "0.138.4+1.21.10"
+
+[neoforge."1.21.10"]
+# Absorbs 1.21.9 rather than leaving it uncovered: 1.21.10 was its hotfix follow-up.
+mod.mc_compat = "[1.21.9,1.21.11)"
+mod.loader_compat = "[21.9,21.11)"
+deps.neo_loader = "21.10.52-beta"
+
+# ---- 1.21.8 ----
+["1.21.8"]
+mod.mc_releases = ["1.21.8"]
+
+[fabric."1.21.8"]
+mod.mc_compat = "1.21.8"
+deps.fabric_api = "0.136.1+1.21.8"
+
+[neoforge."1.21.8"]
+mod.mc_compat = "[1.21.8,1.21.9)"
+mod.loader_compat = "[21.8,21.9)"
+deps.neo_loader = "21.8.29"
+
+# ---- 1.21.5 (covers 1.21.5-1.21.7) ----
+["1.21.5"]
+mod.mc_releases = ["1.21.5", "1.21.6", "1.21.7"]
+
+[fabric."1.21.5"]
+mod.mc_compat = ">=1.21.5 <=1.21.7"
+deps.fabric_api = "0.128.2+1.21.5"
+
+[neoforge."1.21.5"]
+mod.mc_compat = "[1.21.5,1.21.8)"
+mod.loader_compat = "[21.5,21.8)"
+deps.neo_loader = "21.5.80"
+
+# ---- 1.21.4 (covers 1.21.2-1.21.4) ----
+["1.21.4"]
+mod.mc_releases = ["1.21.2", "1.21.3", "1.21.4"]
+
+[fabric."1.21.4"]
+mod.mc_compat = ">=1.21.2 <=1.21.4"
+deps.fabric_api = "0.119.4+1.21.4"
+
+[neoforge."1.21.4"]
+mod.mc_compat = "[1.21.2,1.21.5)"
+mod.loader_compat = "[21.2,21.5)"
+deps.neo_loader = "21.4.136"
+
+# ---- 1.20.4 (Fabric covers 1.20.2-1.20.6; NeoForge covers 1.20.4-1.20.6) ----
+["1.20.4"]
+mod.mc_releases = ["1.20.4", "1.20.5", "1.20.6"]
+
+[fabric."1.20.4"]
+# Reaches down to 1.20.2 so nothing falls in the gap above the 1.20.1 node. NeoForge cannot: its jar
+# starts at the version it builds against, and a separate 1.20.2 node is unbuildable - ModDevGradle
+# needs the neoforge-moddev-bundle variant, which NeoForge first published in 20.4.238.
+mod.mc_releases = ["1.20.2", "1.20.3", "1.20.4", "1.20.5", "1.20.6"]
+mod.mc_compat = ">=1.20.2 <=1.20.6"
+deps.fabric_api = "0.97.2+1.20.4"
+
+[neoforge."1.20.4"]
+mod.mc_compat = "[1.20.4,1.21)"
+mod.loader_compat = "[20.4,21)"
+deps.neo_loader = "20.4.251"
+
+# ---- 1.19.4 (Fabric; covers 1.19.3-1.19.4) ----
+["1.19.4"]
+mod.mc_releases = ["1.19.3", "1.19.4"]
+
+[fabric."1.19.4"]
+mod.mc_compat = ">=1.19.3 <=1.19.4"
+deps.fabric_api = "0.87.2+1.19.4"
+
+# ---- 1.19.2 (Fabric covers 1.18.2-1.19.2; Forge covers 1.19.x) ----
+["1.19.2"]
+mod.mc_releases = ["1.19", "1.19.1", "1.19.2"]
+
+[fabric."1.19.2"]
+# Floor is 1.18.2, not 1.17: com.mojang:logging (LogUtils) first ships as a Minecraft library in
+# 1.18.2, and 12 PAPI classes import it, so below that the jar dies with NoClassDefFoundError.
+mod.mc_compat = ">=1.18.2 <=1.19.2"
+deps.fabric_api = "0.77.0+1.19.2"
+
+[forge."1.19.2"]
+# Verified 2026-07-20: a probe 1.19.4-forge node compiles and produces a refmap byte-identical to
+# this node's, so the mixins resolve across the whole range.
+mod.mc_compat = "[1.19,1.20)"
+mod.loader_compat = "[41,)"
+deps.forge = "43.2.13"
+
+# ---- 1.18.2 (Forge) ----
+["1.18.2"]
+mod.mc_releases = ["1.18.2"]
+
+[forge."1.18.2"]
+# Was [1.17,1.19). A probe 1.17.1-forge node fails to compile on two counts: com.mojang.logging
+# (a Minecraft library only from 1.18.2) and net.minecraftforge.event.server (Forge 1.18+). The
+# same LogUtils dependency rules out 1.18 and 1.18.1, whose library lists also lack com.mojang:logging.
+mod.mc_compat = "[1.18.2,1.19)"
+mod.loader_compat = "[40,)"
+deps.forge = "40.1.30"

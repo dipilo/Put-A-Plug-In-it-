@@ -3,11 +3,14 @@ plugins {
     id 'eclipse'
     id 'idea'
     id 'net.minecraftforge.gradle' version '5.1.+'
+    id 'org.spongepowered.mixin' version '0.7-SNAPSHOT'
 }
 
 group = 'com.dipilodopilasaurus'
-version = "1.16.5-forge-1.1.1"
-base { archivesName = 'papi' }
+// Jar file name is <archivesName>-<version>: papi-forge-1.16.5-1.2.1. The declared mod version
+// (mods.toml) is the plain mod_version below, matching the Stonecutter tree.
+version = "1.16.5-1.2.1"
+base { archivesName = 'papi-forge' }
 
 java {
     toolchain.languageVersion = JavaLanguageVersion.of(8)
@@ -47,11 +50,11 @@ tasks.named('processResources', ProcessResources).configure {
         mod_id: 'papi',
         mod_name: 'Put A Plug In it!',
         mod_authors: 'Dipilodopilasaurus',
-        mod_version: project.version,
+        mod_version: '1.2.1',
         mod_description: 'Client leak mitigation for Sophisticated Core ItemStackKey cache.',
-        loader_version_range: '[36,)',
-        minecraft_version_range: '[1.16.5,1.17)',
-        forge_or_neo_version_range: '[36,)'
+        loader_version_range: '[31,)',
+        minecraft_version_range: '[1.15.2,1.17)',
+        forge_or_neo_version_range: '[31,)'
     ]
     inputs.properties replaceProperties
     filesMatching(['META-INF/mods.toml']) {
@@ -64,6 +67,15 @@ tasks.named('processResources', ProcessResources).configure {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
+}
+
+// ForgeGradle 5 does not configure the Mixin AP itself, and `createMcpToSrg` emits TSRG v2, which
+// the AP bundled with Mixin 0.8.5 cannot parse. MixinGradle handles both, so the refmap actually
+// gets populated; without it every @Inject/@Shadow naming a Minecraft member binds in dev and then
+// fails against the SRG-named production jar.
+mixin {
+    add sourceSets.main, 'papi.refmap.json'
+    config 'papi.mixins.json'
 }
 
 tasks.named('jar', Jar).configure {

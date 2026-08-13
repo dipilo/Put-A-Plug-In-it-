@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "${id}",
+  "version": "${version}",
+  "name": "${name}",
+  "description": "${description}",
+  "authors": [
+    "Dipilodopilasaurus"
+  ],
+  "contact": {
+    "homepage": "https://github.com/dipilo/Put-A-Plug-In-it",
+    "sources": "https://github.com/dipilo/Put-A-Plug-In-it"
+  },
+  "license": "LGPL-3.0-or-later",
+  "icon": "assets/papi/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.dipilodopilasaurus.putapluginit.PutAPlugInItFabric"
+    ],
+    "client": [
+      "com.dipilodopilasaurus.putapluginit.PutAPlugInItFabric"
+    ]
+  },
+  "mixins": [
+    "papi.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.15",
+    "minecraft": "${minecraft}"
+  }
+}

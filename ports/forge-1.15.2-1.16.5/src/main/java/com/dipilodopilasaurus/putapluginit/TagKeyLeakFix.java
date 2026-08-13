@@ -1,19 +1,30 @@
 /*
  * This file is part of Put A Plug In it! - https://github.com/dipilo/Put-A-Plug-In-it
- * Copyright (C) 2023-2026 dipilo and contributors
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 3 of the License, or (at your option) any later version.
+ * Adapted from MemoryLeakFix by Fx Morin (fxmorin / ca.fxco)
+ * https://github.com/fxmorin/memoryLeakFix
+ * Original work Copyright (C) Fx Morin. Original license: GNU LGPL-2.1-only.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * Changed by dipilo and PAPI contributors on 2026-03-07; modified through 2026.
+ * Modifications Copyright (C) 2026 dipilo and PAPI contributors.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * Merged into Put A Plug In it! with the author's explicit written permission,
+ * granted on the condition that MemoryLeakFix is credited. See NOTICE.md.
+ *
+ * This file remains licensed under the GNU Lesser General Public License,
+ * version 2.1 ONLY. It is not relicensed to LGPL-3.0 and cannot be, because
+ * MemoryLeakFix is LGPL-2.1-only. You may redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License version 2.1 as
+ * published by the Free Software Foundation.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * version 2.1 along with this file; see licenses/LGPL-2.1.txt. If not, see
+ * <https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html>.
  */
 package com.dipilodopilasaurus.putapluginit;
 
@@ -23,8 +34,6 @@ import com.google.common.collect.Interners;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.List;
 
 public final class TagKeyLeakFix {
 
@@ -33,91 +42,64 @@ public final class TagKeyLeakFix {
     private TagKeyLeakFix() {
     }
 
+    @SuppressWarnings("java:S3011") // Swapping TagKey's strong interner for a weak one requires field access.
     public static void applyIfNeeded() {
         if (attempted) {
             return;
         }
         attempted = true;
 
-        if (!isBelow119()) {
+        if (!isExactly1182()) {
             return;
         }
 
         try {
-            replaceTagKeyInterner();
+            Class<?> tagKeyClass = Class.forName("net.minecraft.tags.TagKey", false, TagKeyLeakFix.class.getClassLoader());
+            Field internerField = findStaticInternerField(tagKeyClass);
+            if (internerField == null) {
+                return;
+            }
+
+            internerField.setAccessible(true);
+            removeFinalModifier(internerField);
+            internerField.set(null, Interners.newWeakInterner());
         } catch (ReflectiveOperationException | RuntimeException ignored) {
             // Best-effort: if internals differ for a patch, skip silently.
         }
     }
 
-    @SuppressWarnings("java:S3011")
-    private static void replaceTagKeyInterner() throws ReflectiveOperationException {
-        Class<?> tagKeyClass = Class.forName("net.minecraft.tags.TagKey", false, TagKeyLeakFix.class.getClassLoader());
-        Field internerField = findStaticInternerField(tagKeyClass);
-        if (internerField == null) {
-            return;
-        }
-        internerField.setAccessible(true);
-        removeFinalModifier(internerField);
-        internerField.set(null, Interners.newWeakInterner());
-    }
-
-    private static boolean isBelow119() {
+    private static boolean isExactly1182() {
         try {
             Object worldVersion = resolveWorldVersion();
             String versionName = extractVersionName(worldVersion);
-            return compareSimpleVersion(versionName, "1.19.0") < 0;
+            return "1.18.2".equals(versionName);
         } catch (RuntimeException ignored) {
             return false;
         }
     }
 
-    private static int compareSimpleVersion(String left, String right) {
-        String[] leftParts = left.split("\\.");
-        String[] rightParts = right.split("\\.");
-        int len = Math.max(leftParts.length, rightParts.length);
-        for (int i = 0; i < len; i++) {
-            int li = i < leftParts.length ? parseIntPrefix(leftParts[i]) : 0;
-            int ri = i < rightParts.length ? parseIntPrefix(rightParts[i]) : 0;
-            if (li != ri) {
-                return Integer.compare(li, ri);
-            }
-        }
-        return 0;
-    }
-
-    private static int parseIntPrefix(String value) {
-        String digits = value.replaceAll("\\D.*$", "");
-        if (digits.isEmpty()) {
-            return 0;
-        }
-        try {
-            return Integer.parseInt(digits);
-        } catch (NumberFormatException ignored) {
-            return 0;
-        }
-    }
-
     private static Object resolveWorldVersion() {
+        Class<?> sharedConstantsClass;
         try {
-            Class<?> sharedConstantsClass = Class.forName("net.minecraft.SharedConstants", false, TagKeyLeakFix.class.getClassLoader());
-            List<String> methodNames = Arrays.asList("getCurrentVersion", "getGameVersion", "createGameVersion");
-            for (String methodName : methodNames) {
-                Method method = findNoArgMethod(sharedConstantsClass, methodName);
-                if (method != null) {
-                    return method.invoke(null);
-                }
-            }
-        } catch (ReflectiveOperationException ignored) {
+            sharedConstantsClass = Class.forName("net.minecraft.SharedConstants", false, TagKeyLeakFix.class.getClassLoader());
+        } catch (ClassNotFoundException ignored) {
             return null;
+        }
+        for (String methodName : new String[]{"getCurrentVersion", "getGameVersion", "createGameVersion"}) {
+            Object version = invokeStatic(sharedConstantsClass, methodName);
+            if (version != null) {
+                return version;
+            }
         }
         return null;
     }
 
-    private static Method findNoArgMethod(Class<?> owner, String methodName) {
+    /** Returns null when the method is absent, so callers can fall through to the next candidate. */
+    private static Object invokeStatic(Class<?> owner, String methodName) {
         try {
-            return owner.getMethod(methodName);
-        } catch (NoSuchMethodException ignored) {
+            Method method = owner.getMethod(methodName);
+            return method.invoke(null);
+        } catch (ReflectiveOperationException ignored) {
             return null;
         }
     }
@@ -126,25 +108,22 @@ public final class TagKeyLeakFix {
         if (worldVersion == null) {
             return "";
         }
-        Method getName = findNoArgMethod(worldVersion.getClass(), "getName");
-        if (getName != null) {
-            try {
-                Object value = getName.invoke(worldVersion);
-                return value == null ? "" : value.toString();
-            } catch (ReflectiveOperationException ignored) {
-                // Continue fallback chain.
-            }
+        String name = invokeStringGetter(worldVersion, "getName");
+        if (name != null) {
+            return name;
         }
-        Method getId = findNoArgMethod(worldVersion.getClass(), "getId");
-        if (getId != null) {
-            try {
-                Object value = getId.invoke(worldVersion);
-                return value == null ? "" : value.toString();
-            } catch (ReflectiveOperationException ignored) {
-                // Continue fallback chain.
-            }
+        String id = invokeStringGetter(worldVersion, "getId");
+        return id != null ? id : worldVersion.toString();
+    }
+
+    /** Returns null when the getter is absent, so callers can fall through to the next candidate. */
+    private static String invokeStringGetter(Object target, String methodName) {
+        try {
+            Object value = target.getClass().getMethod(methodName).invoke(target);
+            return value == null ? "" : value.toString();
+        } catch (ReflectiveOperationException ignored) {
+            return null;
         }
-        return worldVersion.toString();
     }
 
     private static Field findStaticInternerField(Class<?> tagKeyClass) {

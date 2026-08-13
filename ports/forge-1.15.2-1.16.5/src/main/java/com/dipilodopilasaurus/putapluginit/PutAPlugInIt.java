@@ -23,11 +23,9 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 @Mod(PutAPlugInIt.MODID)
+@SuppressWarnings("java:S1118") // FML instantiates the @Mod class; it needs the implicit public ctor.
 public class PutAPlugInIt {
     public static final String MODID = "papi";
-
-    private PutAPlugInIt() {
-    }
 
     @Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
     public static class TickHooks {
@@ -39,8 +37,8 @@ public class PutAPlugInIt {
             if (event.phase == TickEvent.Phase.END) {
                 TagKeyLeakFix.applyIfNeeded();
                 SophisticatedCoreLeakFix.onClientTickEnd();
-                
                 TargetEntityLeakFix.onClientTickEnd();
+                ImmediatelyFastCompat.onClientTickEnd();
             }
         }
 
