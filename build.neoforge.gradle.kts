@@ -32,6 +32,7 @@ val requiredJava = when {
 }
 
 val packFormat = when {
+    sc.current.parsed >= "26.3" -> 97
     sc.current.parsed >= "26.2" -> 85
     sc.current.parsed >= "26.1" -> 84
     sc.current.parsed >= "1.21.11" -> 70
@@ -76,6 +77,10 @@ dependencies {
 
 neoForge {
     version = property("deps.neo_loader") as String
+
+    // MDG 2.0.140 pins NFRT 2.0.18, whose Vineflower emits a `HolderSet$1.contents()` with weaker
+    // access than the interface method, so recompiling Minecraft's own sources fails on 26.3.
+    if (sc.current.parsed >= "26.3") neoFormRuntime { version = "2.0.31" }
 
     mods {
         register(property("mod.id") as String) {

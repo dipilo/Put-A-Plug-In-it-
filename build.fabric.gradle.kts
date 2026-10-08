@@ -27,6 +27,7 @@ val requiredJava: JavaVersion = when {
 }
 
 val packFormat = when {
+    sc.current.parsed >= "26.3" -> 97
     sc.current.parsed >= "26.2" -> 85
     sc.current.parsed >= "26.1" -> 84
     sc.current.parsed >= "1.21.11" -> 70
@@ -53,6 +54,19 @@ repositories {
     strictMaven("https://api.modrinth.com/maven", "Modrinth", "maven.modrinth")
 }
 
+// Dotted-version max, e.g. "0.19.5" vs "0.18.4" -> "0.19.5". Used to raise the smoke-mods loader
+// floor without ever downgrading a node whose own pinned loader is already newer than the floor.
+fun maxDottedVersion(a: String, b: String): String {
+    val pa = a.split(".").map { it.toIntOrNull() ?: 0 }
+    val pb = b.split(".").map { it.toIntOrNull() ?: 0 }
+    for (i in 0 until maxOf(pa.size, pb.size)) {
+        val x = pa.getOrElse(i) { 0 }
+        val y = pb.getOrElse(i) { 0 }
+        if (x != y) return if (x > y) a else b
+    }
+    return a
+}
+
 dependencies {
     fun fapi(vararg modules: String) {
         for (it in modules) modImplementation(fabricApi.module(it, sc.properties["deps.fabric_api"]))
@@ -65,8 +79,15 @@ dependencies {
     // Boot, recent Clumps) require >=0.18, and the dev run must satisfy them or Fabric Loader aborts
     // before PAPI is even exercised. Gated to 1.21.2+: older nodes pass on their pinned loader, and
     // 0.18.x there only surfaces old third-party server bugs (Supplementaries 1.19.2 client-config).
+    // Floored at 0.18.4, never forced to it: a node's own pin (e.g. 26.3's 0.19.5, required by its
+    // own deps.fabric_api) must never be downgraded below what it already declares.
     // Normal builds always keep deps.fabric_loader.
-    val fabricLoaderVersion = if (smokeWithMods && sc.current.parsed >= "1.21.2") "0.18.4" else property("deps.fabric_loader")
+    val declaredLoader = property("deps.fabric_loader") as String
+    val fabricLoaderVersion = if (smokeWithMods && sc.current.parsed >= "1.21.2") {
+        maxDottedVersion(declaredLoader, "0.18.4")
+    } else {
+        declaredLoader
+    }
     modImplementation("net.fabricmc:fabric-loader:$fabricLoaderVersion")
     if (smokeWithMods) {
         // Mods-present smoke: give the dropped-in mods the whole Fabric API rather than PAPI's two

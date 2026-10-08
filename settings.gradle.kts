@@ -28,6 +28,7 @@ stonecutter {
         match("1.20.1", "fabric", "forge")
         match("1.21.1", "fabric", "neoforge")
         // Calendar-versioned releases (26.x). Node id != MC id for hotfixes.
+        match("26.3", "fabric", "neoforge")
         match("26.2", "fabric", "neoforge")
         match("26.1", "fabric", "neoforge", version = "26.1.2")
         // Latest versions (Phase 3 expansion).

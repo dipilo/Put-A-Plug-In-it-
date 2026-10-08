@@ -74,6 +74,8 @@ public final class Config {
     private static final String P_ETF_CLEAR_TEXTURES = "leakFixes.mods.entityTextureFeatures.clearPlayerTextureMapOnRespawn";
     private static final String P_ETF_CLEAR_RENDERER = "leakFixes.mods.entityTextureFeatures.clearRendererStateOnRenderEnd";
     private static final String P_EMF_CLEAR_RENDER_CONTEXT = "leakFixes.mods.entityModelFeatures.clearRenderContextOnRenderEnd";
+    private static final String P_SOPHCORE_RESET_CRAFTING_UI = "leakFixes.mods.sophisticatedCore.resetCraftingUiOnWorldChange";
+    private static final String P_MC_EXPIRE_DAMAGE_SOURCE = "leakFixes.minecraft.livingEntity.expireLastDamageSource";
 
     private static final boolean D_EMI_CLEAR_HISTORY = true;
     private static final boolean D_JADE_CLEAR_CACHES = true;
@@ -84,6 +86,8 @@ public final class Config {
     private static final boolean D_ETF_CLEAR_TEXTURES = true;
     private static final boolean D_ETF_CLEAR_RENDERER = true;
     private static final boolean D_EMF_CLEAR_RENDER_CONTEXT = true;
+    private static final boolean D_SOPHCORE_RESET_CRAFTING_UI = true;
+    private static final boolean D_MC_EXPIRE_DAMAGE_SOURCE = true;
 
     // Defaults stand until loadAll runs, so a fix behaves sanely before any backend is up.
     private static volatile boolean fixSophisticatedCoreItemStackKeyCache = D_SC_ENABLED;
@@ -116,6 +120,8 @@ public final class Config {
     private static volatile boolean etfClearPlayerTextureMapOnRespawn = D_ETF_CLEAR_TEXTURES;
     private static volatile boolean etfClearRendererStateOnRenderEnd = D_ETF_CLEAR_RENDERER;
     private static volatile boolean emfClearRenderContextOnRenderEnd = D_EMF_CLEAR_RENDER_CONTEXT;
+    private static volatile boolean sophCoreResetCraftingUiOnWorldChange = D_SOPHCORE_RESET_CRAFTING_UI;
+    private static volatile boolean expireLastDamageSource = D_MC_EXPIRE_DAMAGE_SOURCE;
 
     private Config() {
     }
@@ -195,6 +201,12 @@ public final class Config {
         s.bool(P_EMF_CLEAR_RENDER_CONTEXT, D_EMF_CLEAR_RENDER_CONTEXT,
                 "Entity Model Features: after each living-entity render, drop the animation iteration context the",
                 "renderer still holds. No effect on EMF 3.0.6+, which no longer keeps it on the renderer.");
+        s.bool(P_SOPHCORE_RESET_CRAFTING_UI, D_SOPHCORE_RESET_CRAFTING_UI,
+                "SophisticatedCore: with CraftingTweaks installed, re-register the crafting UI part on world change",
+                "so its singleton stops holding the storage screen, menu, player and level you left behind.");
+        s.bool(P_MC_EXPIRE_DAMAGE_SOURCE, D_MC_EXPIRE_DAMAGE_SOURCE,
+                "Minecraft: drop a living entity's expired last-damage source, which otherwise pins its attacker",
+                "and that attacker's level until something reads it. Runs per living entity per tick.");
     }
 
     public static void loadAll(ConfigView v) {
@@ -228,6 +240,8 @@ public final class Config {
         etfClearPlayerTextureMapOnRespawn = v.getBool(P_ETF_CLEAR_TEXTURES, D_ETF_CLEAR_TEXTURES);
         etfClearRendererStateOnRenderEnd = v.getBool(P_ETF_CLEAR_RENDERER, D_ETF_CLEAR_RENDERER);
         emfClearRenderContextOnRenderEnd = v.getBool(P_EMF_CLEAR_RENDER_CONTEXT, D_EMF_CLEAR_RENDER_CONTEXT);
+        sophCoreResetCraftingUiOnWorldChange = v.getBool(P_SOPHCORE_RESET_CRAFTING_UI, D_SOPHCORE_RESET_CRAFTING_UI);
+        expireLastDamageSource = v.getBool(P_MC_EXPIRE_DAMAGE_SOURCE, D_MC_EXPIRE_DAMAGE_SOURCE);
     }
 
     public static boolean isFixSophisticatedCoreItemStackKeyCacheEnabled() {
@@ -316,6 +330,14 @@ public final class Config {
 
     public static boolean isSophCoreClearStorageWrappersOnWorldUnloadEnabled() {
         return sophCoreClearStorageWrappersOnWorldUnload;
+    }
+
+    public static boolean isSophCoreResetCraftingUiOnWorldChangeEnabled() {
+        return sophCoreResetCraftingUiOnWorldChange;
+    }
+
+    public static boolean isExpireLastDamageSourceEnabled() {
+        return expireLastDamageSource;
     }
 
     public static boolean isSupplementariesClearCachesOnServerStopEnabled() {

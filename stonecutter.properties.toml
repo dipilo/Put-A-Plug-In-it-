@@ -3,7 +3,7 @@
 mod.id = "papi"
 mod.name = "Put A Plug In it!"
 mod.group = "com.dipilodopilasaurus"
-mod.version = "1.2.1"
+mod.version = "1.3.0"
 mod.description = "All-in-one memory leak fix and memory optimization mod."
 
 deps.fabric_loader = "0.17.3"
@@ -14,6 +14,8 @@ loomx.loom_version = "1.17-SNAPSHOT"
 mod.mc_releases = ["1.20.1"]
 
 [fabric."1.20.1"]
+# Own mc_releases: Forge's own override below covers a different, wider span.
+mod.mc_releases = ["1.20", "1.20.1"]
 mod.mc_compat = ">=1.20 <=1.20.1"
 deps.fabric_api = "0.92.2+1.20.1"
 
@@ -43,7 +45,21 @@ mod.mc_compat = "[1.21, 1.21.1]"
 mod.loader_compat = "[21.0,21.2)"
 deps.neo_loader = "21.1.234"
 
-# ---- 26.2 (latest; calendar versioning. NeoForge still beta) ----
+# ---- 26.3 (latest; calendar versioning. NeoForge still beta) ----
+["26.3"]
+mod.mc_releases = ["26.3"]
+
+[fabric."26.3"]
+mod.mc_compat = ">=26.3 <26.4"
+deps.fabric_api = "0.161.0+26.3"
+deps.fabric_loader = "0.19.5"
+
+[neoforge."26.3"]
+mod.mc_compat = "[26.3,26.4)"
+mod.loader_compat = "[26.3,26.4)"
+deps.neo_loader = "26.3.0.51-beta"
+
+# ---- 26.2 (calendar versioning. NeoForge still beta) ----
 ["26.2"]
 mod.mc_releases = ["26.2"]
 
@@ -175,7 +191,9 @@ deps.fabric_api = "0.77.0+1.19.2"
 
 [forge."1.19.2"]
 # Verified 2026-07-20: a probe 1.19.4-forge node compiles and produces a refmap byte-identical to
-# this node's, so the mixins resolve across the whole range.
+# this node's, so the mixins resolve across the whole range. Own mc_releases because that range is
+# wider than the shared block's: Fabric stops at 1.19.2.
+mod.mc_releases = ["1.19", "1.19.1", "1.19.2", "1.19.3", "1.19.4"]
 mod.mc_compat = "[1.19,1.20)"
 mod.loader_compat = "[41,)"
 deps.forge = "43.2.13"

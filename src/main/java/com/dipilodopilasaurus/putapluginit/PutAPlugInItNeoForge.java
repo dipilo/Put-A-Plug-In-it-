@@ -40,8 +40,11 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 public class PutAPlugInItNeoForge {
     @SuppressWarnings("unused")
     public PutAPlugInItNeoForge(IEventBus modBus, ModContainer modContainer) {
-        //? if >=1.21 {
-        modContainer.registerConfig(ModConfig.Type.COMMON, NeoForgeConfigBackend.SPEC);
+        // FML 12 (NeoForge 26.3) renamed Type.COMMON to LOCAL and SERVER to SYNCED.
+        //? if >=26.3 {
+        modContainer.registerConfig(ModConfig.Type.LOCAL, NeoForgeConfigBackend.SPEC);
+        //?} elif >=1.21 {
+        /^modContainer.registerConfig(ModConfig.Type.COMMON, NeoForgeConfigBackend.SPEC);^/
         //?} else {
         /^net.neoforged.fml.ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, NeoForgeConfigBackend.SPEC);^/
         //?}

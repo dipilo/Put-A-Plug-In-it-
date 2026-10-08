@@ -88,6 +88,7 @@ public final class ModFixes {
         JadeCacheFix.onClientRespawn();
         JeiCacheFix.onClientWorldChange();
         EtfTextureFix.onClientRespawn(player);
+        SophisticatedCoreCraftingUiFix.onClientWorldChange();
     }
 
     private static void dispatchClientLevelUnload() {
@@ -95,5 +96,6 @@ public final class ModFixes {
         IcebergCacheFix.onClientLevelUnload();
         JeiCacheFix.onClientWorldChange();
         SophisticatedCoreWrapperFix.onClientLevelUnload();
+        SophisticatedCoreCraftingUiFix.onClientWorldChange();
     }
 }

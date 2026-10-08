@@ -18,16 +18,21 @@ import org.slf4j.Logger;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
  * JEI: on client level unload and on respawn, clears the {@code RecipeTransferManager}'s
- * unsupported-container set and drops {@code GrindstoneRecipeMaker}'s cached menu.
+ * unsupported-container set, drops {@code GrindstoneRecipeMaker}'s cached menu, and discards the
+ * static ingredient codecs.
  *
- * <p>Harvested from AllTheLeaks (MIT) {@code leaks/client/mods/jei/{UntrackedIssue001,UntrackedIssue004}}.
- * Neither is evicted: the container set accumulates menus holding a player and level, and the static
- * grindstone menu pins one for the session.
+ * <p>Harvested from AllTheLeaks (MIT) {@code leaks/client/mods/jei/{UntrackedIssue001,
+ * UntrackedIssue002, UntrackedIssue004}}. None is evicted: the container set accumulates menus
+ * holding a player and level, the static grindstone menu pins one for the session, and each codec
+ * closes over the {@code IIngredientManager} of the runtime that built it.
  *
  * <p>Level unload stands in for upstream's {@code LoggingOut} and casts the wider net - quitting to
  * the menu strands the menu whether or not the connection is torn down.
@@ -42,6 +47,9 @@ final class JeiCacheFix {
     private static final String GRINDSTONE_CLASS = "mezz.jei.library.plugins.vanilla.grindstone.GrindstoneRecipeMaker";
     private static final String UNSUPPORTED_CONTAINERS_FIELD = "unsupportedContainers";
     private static final String GRINDSTONE_MENU_FIELD = "GRINDSTONE_MENU";
+    private static final String CODECS_CLASS = "mezz.jei.common.codecs.TypedIngredientCodecs";
+    private static final String[] CODEC_FIELDS = {"ingredientCodec", "ingredientTypeCodec"};
+    private static final String CODEC_MAP_FIELD = "codecMapCache";
     private static final String OPTIONAL_RUNTIME_GETTER = "getOptionalJeiRuntime";
     private static final String RUNTIME_GETTER = "getJeiRuntime";
 
@@ -49,6 +57,8 @@ final class JeiCacheFix {
     private static volatile boolean available;
     private static Method runtimeAccessor;
     private static Field grindstoneMenuField;
+    private static Field[] codecFields = new Field[0];
+    private static Field codecMapField;
 
     private JeiCacheFix() {
     }
@@ -59,6 +69,7 @@ final class JeiCacheFix {
         }
         clearUnsupportedContainers();
         clearGrindstoneMenu();
+        clearIngredientCodecs();
     }
 
     private static boolean enabled() {
@@ -107,6 +118,23 @@ final class JeiCacheFix {
         }
     }
 
+    /** Both codecs and the per-type map are lazily rebuilt on the next read, so dropping them is safe. */
+    @SuppressWarnings("java:S3011") // Reaching into JEI internals by reflection is the point of this fix.
+    private static void clearIngredientCodecs() {
+        try {
+            for (Field field : codecFields) {
+                field.set(null, null);
+            }
+            if (codecMapField != null && codecMapField.get(null) instanceof Map<?, ?> cache) {
+                cache.clear();
+            }
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            codecFields = new Field[0];
+            codecMapField = null;
+            LOGGER.warn("[papi] Failed to clear JEI ingredient codecs; disabling that half", e);
+        }
+    }
+
     private static void initIfNeeded() {
         if (triedInit) {
             return;
@@ -123,7 +151,14 @@ final class JeiCacheFix {
             runtimeAccessor = findRuntimeAccessor(ModFixReflection.findClass(INTERNAL_CLASS));
             grindstoneMenuField = ModFixReflection.declaredField(
                     ModFixReflection.findClass(GRINDSTONE_CLASS), GRINDSTONE_MENU_FIELD);
-            available = runtimeAccessor != null || grindstoneMenuField != null;
+            Class<?> codecs = ModFixReflection.findClass(CODECS_CLASS);
+            codecFields = Arrays.stream(CODEC_FIELDS)
+                    .map(name -> ModFixReflection.declaredField(codecs, name))
+                    .filter(Objects::nonNull)
+                    .toArray(Field[]::new);
+            codecMapField = ModFixReflection.declaredField(codecs, CODEC_MAP_FIELD);
+            available = runtimeAccessor != null || grindstoneMenuField != null
+                    || codecFields.length > 0 || codecMapField != null;
         }
     }
 

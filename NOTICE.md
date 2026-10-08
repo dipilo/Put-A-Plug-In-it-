@@ -50,6 +50,8 @@ Code in PAPI that is copied from or directly derived from another project. The o
 - Used by PAPI for the following derived features:
   - `EntityTickList` passive-map clear (release the previous tick's entity backup each tick). 
   PAPI reimplements the technique with a version-stable `TAIL` injection rather than AllTheLeaks' ordinal-based field injection.
+  - Expiring a `LivingEntity`'s retained `lastDamageSource` (`minecraft/UntrackedIssue002`), which otherwise pins the attacker and its level (`mixin/alltheleaks/LivingEntityDamageSourceMixin`). 
+  Upstream calls the getter from NeoForge's `EntityTickEvent.Post` and relies on its clearing side effect; PAPI injects at `tick`'s `TAIL` and writes the field explicitly, because 26.3 refactored the getter to stop clearing.
   - Per-mod client-side leak fixes under `modfix` (harvested from AllTheLeaks' `leaks/client/mods/*`). 
   PAPI reimplements them loader-agnostically via reflection, and derives the respawn / world-unload triggers from client-player/level identity changes on the client tick rather than subscribing to NeoForge-specific events:
     - EMI
@@ -62,9 +64,12 @@ Code in PAPI that is copied from or directly derived from another project. The o
     - JEI
       - clear `RecipeTransferManager.unsupportedContainers` and drop `GrindstoneRecipeMaker.GRINDSTONE_MENU` on world unload and respawn (`jei/UntrackedIssue001`, `jei/UntrackedIssue004`). 
     Upstream drops the menu on `Clone` and `LoggingOut`; PAPI's level-unload transition stands in for the latter.
+      - discard `TypedIngredientCodecs`' static codecs and per-type codec map on the same transitions (`jei/UntrackedIssue002`). 
+    Upstream clears a different pair of static codecs from its own JEI plugin's runtime-unavailable event; PAPI has no JEI plugin, so it clears the codecs that are still static in current JEI from the world-change transition. Each closes over the `IIngredientManager` of the runtime that built it, and all are lazily rebuilt.
     - SophisticatedCore
       - invalidate `StorageWrapperRepository` on client level unload (`sophisticatedcore/UntrackedIssue001`, its `LevelEvent.Unload` half only). 
     The `ItemStackKey.CACHE` half of that upstream class is **not** derived: PAPI's `SophisticatedCoreLeakFix` predates it, clears on the tick rather than on `ScreenEvent.Closing`, and covers the server side.
+      - re-register `CraftingUpgradeTweakUIPart` on world change when CraftingTweaks is also installed, replacing the singleton still holding the old storage screen (`sophisticatedcore/UntrackedIssue002`).
     - Supplementaries
       - run its static cache-clearing methods on server stop (`supplementaries/UntrackedIssue001`–`003`, merged into one version-tolerant table).
     - Entity Texture Features
